@@ -221,7 +221,7 @@ const server = http.createServer(async (req, res) => {
         return send(res, 400, { error: 'Please add your name and a valid email above before running a live search.' });
       if (!creds) { const d = demoMentions(value); return send(res, 200, { demo: true, ...d }); }
       const target = type === 'domain' ? [{ domain: value, search_scope: ['any'] }] : [{ keyword: value, search_scope: ['any'] }];
-      const payload = [{ target, platform: b.platform === 'google' ? 'google' : 'chat_gpt',
+      const payload = [{ target, platform: 'chat_gpt', // ChatGPT only (Nelson's direction 2026-11-02) — no Google AI Overview
         location_code: 2840, language_code: 'en', limit: Math.min(Math.max(Number(b.limit) || 25, 1), 100),
         order_by: ['ai_search_volume,desc'] }];
       const r = await dfs('/v3/ai_optimization/llm_mentions/search_mentions/live', creds, payload);
