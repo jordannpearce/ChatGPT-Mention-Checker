@@ -177,12 +177,27 @@ const server = http.createServer(async (req, res) => {
       }
       const results = [];
       for (const prompt of prompts) {
-        const payload = [{ user_prompt: prompt, model_name: b.model_name || 'gpt-4o', web_search: b.web_search !== false,
+        // NOTE: do NOT send temperature/top_p — GPT-5 / reasoning models reject them
+        // ("this model does not support 'temperature'"). Defaults are fine.
+        const base = { user_prompt: prompt, model_name: b.model_name || 'gpt-4o', web_search: b.web_search !== false,
           ...(b.web_search_country_iso_code ? { web_search_country_iso_code: String(b.web_search_country_iso_code).toUpperCase() } : {}),
           ...(b.web_search_city ? { web_search_city: String(b.web_search_city) } : {}),
-          max_output_tokens: Number(b.max_output_tokens) || 1024, temperature: 0.7 }];
-        const r = await dfs('/v3/ai_optimization/chat_gpt/llm_responses/live', creds, payload);
-        const task = r.json?.tasks?.[0];
+          max_output_tokens: Number(b.max_output_tokens) || 1024 };
+        let r = await dfs('/v3/ai_optimization/chat_gpt/llm_responses/live', creds, [base]);
+        let task = r.json?.tasks?.[0];
+        // Auto-retry once: if the model rejects a field ("does not support 'x'" / "Invalid Field"),
+        // strip the named optional field and resend — keeps the tool working across all models.
+        if (task && task.status_code !== 20000) {
+          const msg = String(task.status_message || '');
+          const m = msg.match(/does not support '?(\w+)'?/) || msg.match(/Invalid Field: '?(\w+)'?/i);
+          const field = m && m[1];
+          if (field && field in base && !['user_prompt', 'model_name'].includes(field)) {
+            const retry = { ...base }; delete retry[field];
+            if (field === 'web_search') { delete retry.web_search_country_iso_code; delete retry.web_search_city; }
+            r = await dfs('/v3/ai_optimization/chat_gpt/llm_responses/live', creds, [retry]);
+            task = r.json?.tasks?.[0];
+          }
+        }
         if (!r.json || r.json.status_code !== 20000 || !task || task.status_code !== 20000)
           { results.push({ prompt, error: `DataForSEO error: ${r.json ? r.json.status_code + ' ' + (task?.status_message || r.json.status_message) : 'HTTP ' + r.http}` }); continue; }
         const parsed = parseLlmResponse(task);
