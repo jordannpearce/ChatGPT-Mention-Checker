@@ -46,3 +46,9 @@ $100/mo minimum commitment — visitors without eligibility will see DataForSEO'
 - `server.js` — proxy, mention analysis, demo data, leads, rate limit
 - `public/index.html` — public landing + tool UI
 - `data/leads.json` — created at runtime (gitignored)
+
+
+## Created By
+- Jordan Pearce
+- https://jordanpearce.com
+- development@info.jordanpearce.com
