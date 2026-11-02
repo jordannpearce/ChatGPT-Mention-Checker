@@ -1,0 +1,1 @@
+{"description":"Public BYO-DataForSEO-key tool: check if ChatGPT mentions your brand (your own prompts live) and find real user prompts where you appear (LLM Mentions).","engines":{"node":">=18"},"main":"server.js","name":"chatgpt-mention-checker","private":true,"scripts":{"start":"node server.js"},"version":"1.0.0"}

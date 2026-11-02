@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChatGPT Mention Checker — Is ChatGPT recommending your business?</title>
+<meta name="description" content="Free tool: run your own prompts through ChatGPT and search real user prompts to see if your brand is mentioned or cited. Bring your own DataForSEO API key — it is never stored.">
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#0f172a;color:#e2e8f0}
+.wrap{max-width:1060px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:30px;margin:0 0 6px}.sub{color:#94a3b8;margin:0 0 8px;font-size:16px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px;margin:14px 0}
+label{display:block;font-size:13px;color:#94a3b8;margin:10px 0 4px}
+input,textarea,select{width:100%;box-sizing:border-box;background:#0f172a;color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:9px}
+button{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 18px;cursor:pointer;font-weight:600}
+button:disabled{opacity:.5}.ghost{background:#334155}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}.tabs button{background:#1e293b;border:1px solid #334155}.tabs button.on{background:#2563eb}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid #334155;padding:8px;text-align:left;vertical-align:top}
+.yes{color:#4ade80;font-weight:700}.no{color:#f87171;font-weight:700}
+.badge{background:#78350f;color:#fde68a;padding:2px 8px;border-radius:99px;font-size:12px}
+details{margin:6px 0}summary{cursor:pointer;color:#93c5fd}
+pre{white-space:pre-wrap;background:#0f172a;padding:12px;border-radius:8px;max-height:320px;overflow:auto}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}}
+.small{font-size:12px;color:#94a3b8}.err{color:#fca5a5}a{color:#93c5fd}
+.steps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}@media(max-width:700px){.steps{grid-template-columns:1fr}}
+.step{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px}
+</style></head><body><div class="wrap">
+<h1>ChatGPT Mention Checker</h1>
+<p class="sub">Is ChatGPT mentioning your business — or your competitors? Test it yourself, two ways. <span id="mode"></span></p>
+<div class="steps">
+<div class="step"><strong>1 · Add your details</strong><br><span class="small">Your name, email, and the brand you want to test.</span></div>
+<div class="step"><strong>2 · Paste your DataForSEO API key</strong><br><span class="small">Free to try in demo mode. For live results use your own key from <a href="https://app.dataforseo.com/api-access" target="_blank" rel="noopener">app.dataforseo.com → API Access</a>. Your key goes only to DataForSEO through this tool and is <strong>never stored on our server</strong>.</span></div>
+<div class="step"><strong>3 · Run a check</strong><br><span class="small">Run your own prompts live, or search the real prompts users already asked.</span></div>
+</div>
+
+<div class="card"><strong>Your details</strong>
+<div class="grid3"><div><label>Your name</label><input id="lname" autocomplete="name"></div>
+<div><label>Email (required for live runs)</label><input id="lemail" type="email" autocomplete="email"></div>
+<div><label>Business name (optional)</label><input id="lbiz" autocomplete="organization"></div></div>
+<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="remember" style="width:auto"> Remember my API key in this browser only (never on our server)</label>
+<div class="grid"><div><label>DataForSEO API login (email)</label><input id="login" autocomplete="off"></div>
+<div><label>DataForSEO API password</label><input id="password" type="password" autocomplete="off"></div></div>
+<p><button id="testBtn" class="ghost">Test my key</button> <span id="setMsg" class="small"></span></p>
+<p class="small">Costs are charged by DataForSEO to <em>your</em> account, not by us: Prompt Checker ≈ a few cents per prompt depending on model/tokens; Mentions Explorer is $0.10 per search + $0.001 per row and needs an eligible DataForSEO account. No key? Demo mode below shows exactly how it works with sample data.</p></div>
+
+<div class="tabs"><button id="tab1" class="on">1 · Prompt Checker (run your prompts live)</button><button id="tab2">2 · Mentions Explorer (real user prompts)</button></div>
+
+<div id="panel1" class="card">
+<div class="grid"><div><label>Brand name to look for</label><input id="brand" placeholder="e.g. Your Business Name"></div>
+<div><label>Your domain (to check citations)</label><input id="domain" placeholder="e.g. yoursite.com"></div></div>
+<label>Competitors (comma-separated, optional)</label><input id="competitors" placeholder="e.g. Competitor A, Competitor B">
+<label>Prompts — one per line, up to 10 per run. Use the prompts your customers would actually ask.</label><textarea id="prompts" rows="6" placeholder="best [your service] in [your city]&#10;who should I hire for [your service]?&#10;top rated [your service] companies near me"></textarea>
+<div class="grid"><div><label>ChatGPT model</label><select id="model"></select></div>
+<div><label>Web search</label><select id="websearch"><option value="true">On (ChatGPT can browse — citations possible)</option><option value="false">Off</option></select></div></div>
+<div class="grid"><div><label>Web search country (ISO, optional)</label><input id="wscountry" placeholder="US"></div>
+<div><label>Web search city (optional)</label><input id="wscity" placeholder="Your city"></div></div>
+<p><button id="runBtn">Run prompts through ChatGPT</button> <span id="runMsg" class="small"></span></p>
+<div id="results1"></div></div>
+
+<div id="panel2" class="card" style="display:none">
+<p class="small" style="margin-top:0">Search DataForSEO's database of 280M+ real ChatGPT and AI Overview prompts and answers. Enter your domain or brand and see the exact prompts users asked where you show up — with the full answer, the sources cited, and how many people ask it (AI search volume).</p>
+<div class="grid"><div><label>Look up</label><select id="ttype"><option value="domain">Domain</option><option value="keyword">Keyword / brand</option></select></div>
+<div><label>Value</label><input id="tvalue" placeholder="e.g. yoursite.com"></div></div>
+<div class="grid"><div><label>Platform</label><select id="platform"><option value="chat_gpt">ChatGPT (US / English only)</option><option value="google">Google AI Overview</option></select></div>
+<div><label>Max rows</label><input id="limit" type="number" value="25" min="1" max="100"></div></div>
+<p><button id="mentionsBtn">Find real user prompts</button> <span id="mentionsMsg" class="small"></span></p>
+<div id="results2"></div></div>
+
+<div class="card"><strong>Your recent checks</strong> <span class="small">(saved only in this browser)</span><div id="history" class="small">—</div></div>
+
+<p class="small">Privacy: your DataForSEO credentials are sent per request through this tool's proxy to api.dataforseo.com and are never written to our server, disk, or logs. If you tick the box above, they are kept only in your own browser. Live runs save your name, email, brand, and result summary so we can follow up about AI visibility — demo runs save nothing. Not affiliated with OpenAI or DataForSEO.</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+async function api(p,body){const r=await fetch(p,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return r.json()}
+function creds(){const l=$('login').value.trim(),p=$('password').value;return l&&p?{login:l,password:p}:undefined}
+function lead(){return{name:$('lname').value.trim(),email:$('lemail').value.trim(),business:$('lbiz').value.trim()}}
+function persist(){if($('remember').checked){localStorage.setItem('cmc_creds',JSON.stringify(creds()||{}))}else{localStorage.removeItem('cmc_creds')}}
+function histAdd(t){let h=[];try{h=JSON.parse(localStorage.getItem('cmc_hist')||'[]')}catch{}h.unshift(new Date().toLocaleString()+' — '+t);localStorage.setItem('cmc_hist',JSON.stringify(h.slice(0,10)));histShow()}
+function histShow(){let h=[];try{h=JSON.parse(localStorage.getItem('cmc_hist')||'[]')}catch{}$('history').innerHTML=h.join('<br>')||'—'}
+async function models(){const m=await api('/api/models',creds()?{creds:creds()}:{});$('model').innerHTML=(m.models||[]).map(x=>`<option>${x}</option>`).join('')}
+async function status(){const s=await api('/api/status');$('mode').innerHTML=s.mode==='live'?'':' <span class="badge">DEMO MODE — add your DataForSEO key above for live results</span>';models()}
+$('tab1').onclick=()=>{$('panel1').style.display='';$('panel2').style.display='none';$('tab1').className='on';$('tab2').className=''};
+$('tab2').onclick=()=>{$('panel2').style.display='';$('panel1').style.display='none';$('tab2').className='on';$('tab1').className=''};
+$('testBtn').onclick=async()=>{persist();$('setMsg').textContent='Testing…';const c=creds();if(!c){$('setMsg').textContent='Enter your login and password first.';return}const r=await api('/api/test-creds',c);$('setMsg').textContent=r.ok?`Key works. Your DataForSEO balance: $${r.balance??'?'}`:(r.error||'Failed');if(r.ok)models()};
+$('runBtn').onclick=async()=>{
+ const prompts=$('prompts').value.split('\n');$('runBtn').disabled=true;$('runMsg').textContent='Running — live calls can take 10–60s per prompt…';persist();
+ const r=await api('/api/prompt-check',{creds:creds(),lead:lead(),brand:$('brand').value,domain:$('domain').value,competitors:$('competitors').value.split(','),prompts,model_name:$('model').value,web_search:$('websearch').value==='true',web_search_country_iso_code:$('wscountry').value||undefined,web_search_city:$('wscity').value||undefined});
+ $('runBtn').disabled=false;$('runMsg').textContent=r.error||'';if(r.error)return;
+ const hit=r.results.filter(x=>x.brand_mentioned).length,cited=r.results.filter(x=>x.domain_cited).length;
+ $('results1').innerHTML=`<p><strong>Summary:</strong> your brand was mentioned in ${hit}/${r.results.length} prompts · your domain was cited in ${cited}/${r.results.length} ${r.demo?'· <span class="badge">DEMO — sample data</span>':''}</p>`+
+ `<table><tr><th>Prompt</th><th>Mentioned?</th><th>Cited?</th><th>Competitors</th><th>Cost</th><th>Answer</th></tr>`+
+ r.results.map(x=>x.error?`<tr><td>${x.prompt}</td><td colspan="5" class="err">${x.error}</td></tr>`:
+ `<tr><td>${x.prompt}</td><td class="${x.brand_mentioned?'yes':'no'}">${x.brand_mentioned?`YES ×${x.brand_count}`:'No'}</td><td class="${x.domain_cited?'yes':'no'}">${x.domain_cited?'YES':'No'}</td><td>${Object.entries(x.competitors||{}).map(([k,v])=>`${k}: ${v}`).join('<br>')||'—'}</td><td>$${(x.money_spent||0).toFixed(4)}</td><td><details><summary>View answer, citations${x.fan_out_queries?.length?', fan-out queries':''}</summary><pre>${(x.text||'').replace(/</g,'&lt;')}</pre><strong>Citations:</strong><br>${(x.annotations||[]).map(a=>`<a href="${a.url}" target="_blank" rel="noopener">${a.title||a.url}</a>`).join('<br>')||'none'}<br><strong>Fan-out queries:</strong> ${(x.fan_out_queries||[]).join(' · ')||'none'}</details></td></tr>`).join('')+`</table>`;
+ histAdd(`Prompt Checker${r.demo?' (demo)':''}: ${$('brand').value||'brand'} mentioned ${hit}/${r.results.length}, cited ${cited}/${r.results.length}`)};
+$('mentionsBtn').onclick=async()=>{
+ $('mentionsBtn').disabled=true;$('mentionsMsg').textContent='Searching the mentions database…';persist();
+ const r=await api('/api/mentions-search',{creds:creds(),lead:lead(),target_type:$('ttype').value,target_value:$('tvalue').value,platform:$('platform').value,limit:Number($('limit').value)});
+ $('mentionsBtn').disabled=false;$('mentionsMsg').textContent=r.error||'';if(r.error)return;
+ const vol=r.items.reduce((a,x)=>a+(x.ai_search_volume||0),0);
+ $('results2').innerHTML=`<p><strong>${r.total_count.toLocaleString()} total prompts found</strong> · showing ${r.items.length} · combined AI search volume on this page: ${vol.toLocaleString()} ${r.demo?'· <span class="badge">DEMO — sample data</span>':''} ${r.cost?`· cost $${r.cost}`:''}</p>`+
+ `<table><tr><th>Prompt users asked</th><th>AI search volume</th><th>Model</th><th>Sources</th><th>Answer</th></tr>`+
+ r.items.map(x=>`<tr><td>${(x.question||'').replace(/</g,'&lt;')}</td><td>${(x.ai_search_volume||0).toLocaleString()}</td><td>${x.model_name||''}</td><td>${(x.sources||[]).length} source(s)<br>${(x.sources||[]).slice(0,5).map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.domain||s.title}</a>`).join('<br>')}</td><td><details><summary>View full answer</summary><pre>${(x.answer||'').replace(/</g,'&lt;')}</pre><span class="small">First seen: ${x.first_response_at||'—'} · Last seen: ${x.last_response_at||'—'}</span></details></td></tr>`).join('')+`</table>`;
+ histAdd(`Mentions Explorer${r.demo?' (demo)':''}: ${$('tvalue').value} — ${r.total_count} prompts`)};
+try{const c=JSON.parse(localStorage.getItem('cmc_creds')||'null');if(c&&c.login){$('login').value=c.login;$('password').value=c.password||'';$('remember').checked=true}}catch{}
+status();histShow();
+</script></body></html>
